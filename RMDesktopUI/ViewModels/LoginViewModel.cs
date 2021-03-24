@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using RMDesktopUI.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,31 +10,38 @@ namespace RMDesktopUI.ViewModels
 {
     public class LoginViewModel : Screen
     {
+        #region Properties
+
+        #region Private Properties
+
         private string _userName;
         private string _password;
+        private IApiHelper _apiHelper;
+
+        #endregion
+
+        #region Public Properties
 
         public string UserName
         {
             get { return _userName; }
-            set 
-            { 
+            set
+            {
                 _userName = value;
                 NotifyOfPropertyChange(() => UserName);
                 NotifyOfPropertyChange(() => CanLogIn);
             }
         }
-
         public string Password
         {
             get { return _password; }
-            set 
+            set
             {
                 _password = value;
                 NotifyOfPropertyChange(() => Password);
                 NotifyOfPropertyChange(() => CanLogIn);
             }
         }
-
         public bool CanLogIn
         {
             get
@@ -49,9 +57,25 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
-        public void LogIn()
+        #endregion
+
+        #endregion
+
+        public LoginViewModel(IApiHelper apiHelper)
         {
-            Console.WriteLine();
+            _apiHelper = apiHelper;
+        }
+
+        public async Task LogIn()
+        {
+            try
+            {
+                var result = await _apiHelper.Authenticate(UserName, Password);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
     }
 }

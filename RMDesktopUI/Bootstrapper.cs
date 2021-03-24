@@ -32,7 +32,8 @@ namespace RMDesktopUI
             // Singleton -> We create one instance of the class for the life of the application (or lifetime scope of the container. If, e.g., ShellViewModel asks for an IEventAggregator, it's gonna get the first EventAggregator ever created -> One instance for the application. Don't use Singletons to much!
             _container
                 .Singleton<IWindowManager, WindowManager>()
-                .Singleton<IEventAggregator, EventAggregator>();
+                .Singleton<IEventAggregator, EventAggregator>()
+                .Singleton<IApiHelper, ApiHelper>();
 
             // Don't use reflection too much! Bad for performance
             GetType().Assembly.GetTypes()
