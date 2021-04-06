@@ -17,6 +17,7 @@ namespace RMDesktopUI.ViewModels
         private string _userName;
         private string _password;
         private IApiHelper _apiHelper;
+        private string _errorMessage;
 
         #endregion
 
@@ -56,6 +57,29 @@ namespace RMDesktopUI.ViewModels
                 return output;
             }
         }
+        public bool IsErrorVisible
+        {
+            get 
+            {
+                bool output = false;
+
+                if (ErrorMessage?.Length > 0)
+                {
+                    output = true;
+                }
+                return output; 
+            }
+        }
+        public string ErrorMessage
+        {
+            get { return _errorMessage; }
+            set 
+            {
+                _errorMessage = value;
+                NotifyOfPropertyChange(() => IsErrorVisible);
+                NotifyOfPropertyChange(() => ErrorMessage); 
+            }
+        }
 
         #endregion
 
@@ -70,11 +94,12 @@ namespace RMDesktopUI.ViewModels
         {
             try
             {
+                ErrorMessage = string.Empty;
                 var result = await _apiHelper.Authenticate(UserName, Password);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                ErrorMessage = ex.Message;
             }
         }
     }
