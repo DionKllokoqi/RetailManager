@@ -69,8 +69,6 @@
     <Build Include="dbo\Tables\SaleDetail.sql" />
     <Build Include="dbo\Tables\Product.sql" />
     <Build Include="dbo\Tables\Inventory.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <RefactorLog Include="RMData.refactorlog" />
+    <Build Include="dbo\Stored_Procedures\spUserLookup.sql" />
   </ItemGroup>
 </Project>
