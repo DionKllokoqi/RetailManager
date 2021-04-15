@@ -12,13 +12,14 @@ namespace RetailDataManager.Controllers
     [Authorize]
     public class UserController : ApiController
     {
-        public List<UserModel> GetById()
+        [HttpGet]
+        public UserModel GetById()
         {
             // User can only request the user that is currently logged in
             string userId = RequestContext.Principal.Identity.GetUserId();
             UserData data = new UserData();
 
-            return data.GetUserById(userId);
+            return data.GetUserById(userId).First();
         }
     }
 }
