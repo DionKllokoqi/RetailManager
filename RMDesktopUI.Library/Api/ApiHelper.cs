@@ -15,6 +15,14 @@ namespace RMDesktopUI.Library.Api
         private HttpClient _apiClient;
         private ILoggedInUserModel _loggedInUser;
 
+        public HttpClient ApiClient
+        {
+            get
+            {
+                return _apiClient;
+            }
+        }
+
         public ApiHelper(ILoggedInUserModel loggedInUser)
         {
             InitializeClient();
