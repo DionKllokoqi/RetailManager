@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using RMDesktopUI.Library.Api;
+using RMDesktopUI.Library.Helpers;
 using RMDesktopUI.Library.Models;
 using System;
 using System.Collections.Generic;
@@ -12,16 +13,25 @@ namespace RMDesktopUI.ViewModels
 {
     public class SalesViewModel : Screen
     {
+        #region Properties
+
+        #region Private
+
         private BindingList<ProductModel> _products;
         private int _itemQuantity = 1;
         private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
         private IProductEndPoint _productEndPoint;
         private ProductModel _selectedProduct;
+        private IConfigHelper _configHelper;
+
+        #endregion
+
+        #region Public
 
         public BindingList<ProductModel> Products
         {
             get { return _products; }
-            set 
+            set
             {
                 _products = value;
                 // triggered only when overwritting entire products list
@@ -31,8 +41,8 @@ namespace RMDesktopUI.ViewModels
         public BindingList<CartItemModel> Cart
         {
             get { return _cart; }
-            set 
-            { 
+            set
+            {
                 _cart = value;
                 NotifyOfPropertyChange(() => Cart);
             }
@@ -40,8 +50,8 @@ namespace RMDesktopUI.ViewModels
         public ProductModel SelectedProduct
         {
             get { return _selectedProduct; }
-            set 
-            { 
+            set
+            {
                 _selectedProduct = value;
                 NotifyOfPropertyChange(() => SelectedProduct);
                 NotifyOfPropertyChange(() => CanAddToCart);
@@ -54,7 +64,7 @@ namespace RMDesktopUI.ViewModels
         public int ItemQuantity
         {
             get { return _itemQuantity; }
-            set 
+            set
             {
                 _itemQuantity = value;
                 NotifyOfPropertyChange(() => ItemQuantity);
@@ -103,11 +113,7 @@ namespace RMDesktopUI.ViewModels
         {
             get
             {
-                decimal subTotal = 0;
-                foreach (var item in Cart)
-                {
-                    subTotal += item.Product.RetailPrice * item.QuantityInCart;
-                }
+                var subTotal = CalculateSubTotal();
                 return subTotal.ToString("C");
             }
         }
@@ -115,23 +121,35 @@ namespace RMDesktopUI.ViewModels
         {
             get
             {
-                // ToDo: Replace with calculation
-                return "$0.00";
+                decimal total = CalculateSubTotal() + CalculateTax();
+                return total.ToString("C");
             }
         }
         public string Tax
         {
             get
             {
-                // ToDo: Replace with calculation
-                return "$0.00";
+                var taxAmount = CalculateTax();
+                // this displays only two decimal points of the value as a currency
+                return taxAmount.ToString("C");
             }
         }
 
-        public SalesViewModel(IProductEndPoint productEndPoint)
+        #endregion
+
+        #endregion
+
+        #region CTOR & Init
+
+        public SalesViewModel(IProductEndPoint productEndPoint, IConfigHelper configHelper)
         {
             _productEndPoint = productEndPoint;
+            _configHelper = configHelper;
         }
+
+        #endregion
+
+        #region Methods
 
         protected override async void OnViewLoaded(object view)
         {
@@ -156,10 +174,10 @@ namespace RMDesktopUI.ViewModels
             }
             else
             {
-                CartItemModel item = new CartItemModel 
+                CartItemModel item = new CartItemModel
                 {
-                    Product = SelectedProduct, 
-                    QuantityInCart = ItemQuantity 
+                    Product = SelectedProduct,
+                    QuantityInCart = ItemQuantity
                 };
                 Cart.Add(item);
             }
@@ -167,16 +185,50 @@ namespace RMDesktopUI.ViewModels
             SelectedProduct.QuantityInStock -= ItemQuantity;
             ItemQuantity = 1;
             NotifyOfPropertyChange(() => SubTotal);
+            NotifyOfPropertyChange(() => Tax);
+            NotifyOfPropertyChange(() => Total);
         }
 
         public void RemoveFromCart()
         {
             NotifyOfPropertyChange(() => SubTotal);
+            NotifyOfPropertyChange(() => Tax);
+            NotifyOfPropertyChange(() => Total);
         }
 
         public void CheckOut()
         {
 
         }
+
+        private decimal CalculateSubTotal()
+        {
+            decimal subTotal = 0;
+
+            foreach (var item in Cart)
+            {
+                subTotal += item.Product.RetailPrice * item.QuantityInCart;
+            }
+
+            return subTotal;
+        }
+
+        private decimal CalculateTax()
+        {
+            decimal taxAmount = 0;
+            decimal taxRate = _configHelper.GetTaxRate();
+
+            foreach (var item in Cart)
+            {
+                if (item.Product.IsTaxable)
+                {
+                    taxAmount += item.Product.RetailPrice * item.QuantityInCart * taxRate;
+                }
+            }
+
+            return taxAmount;
+        } 
+
+        #endregion
     }
 }
