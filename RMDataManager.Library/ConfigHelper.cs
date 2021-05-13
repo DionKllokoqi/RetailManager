@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RMDesktopUI.Library.Helpers
+namespace RMDataManager.Library
 {
-    public class ConfigHelper : IConfigHelper
+    public class ConfigHelper
     {
         // ToDo: Move this from config to the API. Instead of reading from config
         // just call the api to request the tax value and do the calculation.
-        public decimal GetTaxRate()
+        public static decimal GetTaxRate()
         {
             string rateText = ConfigurationManager.AppSettings["taxRate"];
 

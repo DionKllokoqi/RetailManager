@@ -16,8 +16,8 @@ namespace RMDesktopUI.ViewModels
 
         #region Private Properties
 
-        private string _userName;
-        private string _password;
+        private string _userName = "dion.kllokoqi@gmail.com";
+        private string _password = "Pwd12345.";
         private IApiHelper _apiHelper;
         private IEventAggregator _events;
         private string _errorMessage;

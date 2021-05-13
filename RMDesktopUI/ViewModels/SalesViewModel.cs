@@ -17,12 +17,14 @@ namespace RMDesktopUI.ViewModels
 
         #region Private
 
+        private IProductEndPoint _productEndPoint;
+        private IConfigHelper _configHelper;
+        private ISaleEndPoint _saleEndPoint;
+
         private BindingList<ProductModel> _products;
         private int _itemQuantity = 1;
         private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
-        private IProductEndPoint _productEndPoint;
         private ProductModel _selectedProduct;
-        private IConfigHelper _configHelper;
 
         #endregion
 
@@ -105,6 +107,10 @@ namespace RMDesktopUI.ViewModels
                 bool output = false;
 
                 // Make sure something is selected
+                if (Cart?.Count > 0)
+                {
+                    output = true;
+                }
 
                 return output;
             }
@@ -141,9 +147,10 @@ namespace RMDesktopUI.ViewModels
 
         #region CTOR & Init
 
-        public SalesViewModel(IProductEndPoint productEndPoint, IConfigHelper configHelper)
+        public SalesViewModel(IProductEndPoint productEndPoint, IConfigHelper configHelper, ISaleEndPoint saleEndPoint)
         {
             _productEndPoint = productEndPoint;
+            _saleEndPoint = saleEndPoint;
             _configHelper = configHelper;
         }
 
@@ -187,6 +194,7 @@ namespace RMDesktopUI.ViewModels
             NotifyOfPropertyChange(() => SubTotal);
             NotifyOfPropertyChange(() => Tax);
             NotifyOfPropertyChange(() => Total);
+            NotifyOfPropertyChange(() => CanCheckOut);
         }
 
         public void RemoveFromCart()
@@ -194,11 +202,25 @@ namespace RMDesktopUI.ViewModels
             NotifyOfPropertyChange(() => SubTotal);
             NotifyOfPropertyChange(() => Tax);
             NotifyOfPropertyChange(() => Total);
+            NotifyOfPropertyChange(() => CanCheckOut);
         }
 
-        public void CheckOut()
+        public async Task CheckOut()
         {
+            // Create a sale model
+            SaleModel sale = new SaleModel();
 
+            foreach (var item in Cart)
+            {
+                sale.SaleDetails.Add(new SaleDetailModel
+                {
+                    ProductId = item.Product.Id,
+                    Quantity = item.QuantityInCart
+                });
+            }
+
+            // Post to the API
+            await _saleEndPoint.PostSale(sale);
         }
 
         private decimal CalculateSubTotal()

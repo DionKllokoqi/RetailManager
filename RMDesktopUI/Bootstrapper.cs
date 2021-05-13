@@ -31,7 +31,8 @@ namespace RMDesktopUI
         {
             // Return an instace if this internal container when we ask the container for a simple container
             _container.Instance(_container)
-                .PerRequest<IProductEndPoint, ProductEndPoint>();
+                .PerRequest<IProductEndPoint, ProductEndPoint>()
+                .PerRequest<ISaleEndPoint, SaleEndPoint>();
 
             // Singleton -> We create one instance of the class for the life of the application (or lifetime scope of the container. If, e.g., ShellViewModel asks for an IEventAggregator, it's gonna get the first EventAggregator ever created -> One instance for the application. Don't use Singletons to much!
             _container
