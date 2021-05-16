@@ -1,8 +1,10 @@
-﻿using Caliburn.Micro;
+﻿using AutoMapper;
+using Caliburn.Micro;
 using RMDesktopUI.Helpers;
 using RMDesktopUI.Library.Api;
 using RMDesktopUI.Library.Helpers;
 using RMDesktopUI.Library.Models;
+using RMDesktopUI.Models;
 using RMDesktopUI.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -29,7 +31,10 @@ namespace RMDesktopUI
 
         protected override void Configure()
         {
-            // Return an instace if this internal container when we ask the container for a simple container
+            // Put the mapper into the container (as a singleton in this case)
+            _container.Instance(ConfigureAutoMapper());
+
+            // Return an instace of this internal container when we ask the container for a simple container
             _container.Instance(_container)
                 .PerRequest<IProductEndPoint, ProductEndPoint>()
                 .PerRequest<ISaleEndPoint, SaleEndPoint>();
@@ -49,6 +54,20 @@ namespace RMDesktopUI
                 .ToList()
                 .ForEach(viewModelType => _container.RegisterPerRequest(
                     viewModelType, viewModelType.ToString(), viewModelType));
+        }
+
+        private IMapper ConfigureAutoMapper()
+        {
+            // Configure Automapper so that we have a relationship between the classes
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<ProductModel, ProductDisplayModel>();
+                cfg.CreateMap<CartItemModel, CartItemDisplayModel>();
+            });
+
+            var mapper = config.CreateMapper();
+
+            return mapper;
         }
 
         protected override void OnStartup(object sender, StartupEventArgs e)
