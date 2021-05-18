@@ -110,7 +110,7 @@ namespace RMDesktopUI.ViewModels
                 bool output = false;
 
                 // Make sure something is selected
-                if (SelectedCartItem != null && SelectedCartItem.Product.QuantityInStock > 0)
+                if (SelectedCartItem != null && SelectedCartItem.QuantityInCart > 0)
                 {
                     output = true;
                 }
@@ -235,6 +235,7 @@ namespace RMDesktopUI.ViewModels
             NotifyOfPropertyChange(() => Tax);
             NotifyOfPropertyChange(() => Total);
             NotifyOfPropertyChange(() => CanCheckOut);
+            NotifyOfPropertyChange(() => CanAddToCart);
         }
 
         public async Task CheckOut()
@@ -253,6 +254,8 @@ namespace RMDesktopUI.ViewModels
 
             // Post to the API
             await _saleEndPoint.PostSale(sale);
+
+            await ResetSalesViewModel();
         }
 
         private decimal CalculateSubTotal()
@@ -286,6 +289,17 @@ namespace RMDesktopUI.ViewModels
 
             return taxAmount;
         } 
+
+        private async Task ResetSalesViewModel()
+        {
+            Cart = new BindingList<CartItemDisplayModel>();
+            await LoadProducts();
+
+            NotifyOfPropertyChange(() => SubTotal);
+            NotifyOfPropertyChange(() => Tax);
+            NotifyOfPropertyChange(() => Total);
+            NotifyOfPropertyChange(() => CanCheckOut);
+        }
 
         #endregion
     }
