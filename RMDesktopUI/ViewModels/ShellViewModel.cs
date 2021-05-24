@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using RMDesktopUI.EventModels;
+using RMDesktopUI.Library.Api;
 using RMDesktopUI.Library.Models;
 
 namespace RMDesktopUI.ViewModels
@@ -14,6 +15,7 @@ namespace RMDesktopUI.ViewModels
         private IEventAggregator _events;
         private SalesViewModel _salesVM;
         private ILoggedInUserModel _user;
+        private IApiHelper _apiHelper;
 
         public bool IsLoggedIn
         {
@@ -29,11 +31,12 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
-        public ShellViewModel(IEventAggregator events, SalesViewModel salesVM, ILoggedInUserModel user)
+        public ShellViewModel(IEventAggregator events, SalesViewModel salesVM, ILoggedInUserModel user, IApiHelper apiHelper)
         {
             _events = events;
             _salesVM = salesVM;
             _user = user;
+            _apiHelper = apiHelper;
 
             _events.Subscribe(this);
 
@@ -47,7 +50,10 @@ namespace RMDesktopUI.ViewModels
 
         public void LogOut()
         {
-            _user.LogOffUser();
+            // Clears information about user
+            _user.ResetUserModel();
+            // Clears out the header of the api request
+            _apiHelper.LogOffUser();
             ActivateItem(IoC.Get<LoginViewModel>());
             NotifyOfPropertyChange(() => IsLoggedIn);
         }
