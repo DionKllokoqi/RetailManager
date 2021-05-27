@@ -77,6 +77,8 @@ namespace RMDataManager.Library.DataAccess
                     // Save the sale detail models
                     sql.SaveDataInTransaction("dbo.spSaleDetail_Insert", item);
                     });
+
+                    sql.CommitTransaction();
                 }
                 catch
                 {

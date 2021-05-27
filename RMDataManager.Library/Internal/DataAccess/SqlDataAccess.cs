@@ -14,6 +14,7 @@ namespace RMDataManager.Library.Internal.DataAccess
     {
         private IDbConnection _connection;
         private IDbTransaction _transaction;
+        private bool _isClosed = false;
 
         /// <summary>
         /// Get Connection String of the current project that is using this class library.
@@ -73,6 +74,8 @@ namespace RMDataManager.Library.Internal.DataAccess
             _connection.Open();
 
             _transaction = _connection.BeginTransaction();
+
+            _isClosed = false;
         }
 
         public List<T> LoadDataInTransaction<T, U>(string storedProcedure, U parameters)
@@ -93,16 +96,34 @@ namespace RMDataManager.Library.Internal.DataAccess
         {
             _transaction?.Commit();
             _connection?.Close();
+
+            _isClosed = true;
         }
 
         public void RollbackTransaction()
         {
             _transaction?.Rollback();
+            _connection?.Close();
+
+            _isClosed = true;
         }
 
         public void Dispose()
         {
-            CommitTransaction();
+            if (!_isClosed)
+            {
+                try
+                {
+                    CommitTransaction();
+                }
+                catch
+                {
+                    // ToDo - Log this issue
+                } 
+            }
+
+            _transaction = null;
+            _connection = null;
         }
 
         // Open connection / transaction method 
