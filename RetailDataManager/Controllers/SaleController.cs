@@ -21,5 +21,16 @@ namespace RetailDataManager.Controllers
 
             saleData.SaveSale(sale, userId);
         }
+
+        /// <summary>
+        /// Gets the sale reports from the database when api request api/sale/GetSalesReport comes in.
+        /// </summary>
+        /// <returns></returns>
+        [Route("GetSalesReport")]
+        public List<SaleReportModel> GetSalesReport()
+        {
+            SaleData data = new SaleData();
+            return data.GetSaleReport();
+        }
     }
 }

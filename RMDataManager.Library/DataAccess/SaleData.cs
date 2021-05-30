@@ -87,5 +87,18 @@ namespace RMDataManager.Library.DataAccess
                 }
             }
         }
+
+        /// <summary>
+        /// Method is used to read the sale report data from the database and save into a <see cref="SaleReportModel"/> object and return it.
+        /// </summary>
+        /// <returns></returns>
+        public List<SaleReportModel> GetSaleReport()
+        {
+            SqlDataAccess sql = new SqlDataAccess();
+
+            var output = sql.LoadData<SaleReportModel, dynamic>("dbo.spSale_SaleReport", new { }, "RMData");
+
+            return output;
+        }
     }
 }
