@@ -13,6 +13,7 @@ namespace RetailDataManager.Controllers
     [Authorize]
     public class SaleController : ApiController
     {
+        [Authorize(Roles = "Cashier")]
         public void Post(SaleModel sale)
         {
             SaleData saleData = new SaleData();
@@ -26,6 +27,7 @@ namespace RetailDataManager.Controllers
         /// Gets the sale reports from the database when api request api/sale/GetSalesReport comes in.
         /// </summary>
         /// <returns></returns>
+        [Authorize(Roles = "Admin,Manager")]
         [Route("GetSalesReport")]
         public List<SaleReportModel> GetSalesReport()
         {
