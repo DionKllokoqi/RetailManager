@@ -7,9 +7,11 @@ using RMDesktopUI.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace RMDesktopUI.ViewModels
 {
@@ -23,12 +25,13 @@ namespace RMDesktopUI.ViewModels
         private IConfigHelper _configHelper;
         private ISaleEndPoint _saleEndPoint;
         private IMapper _mapper;
-
+        private readonly StatusInfoViewModel _status;
         private BindingList<ProductDisplayModel> _products;
         private int _itemQuantity = 1;
         private BindingList<CartItemDisplayModel> _cart = new BindingList<CartItemDisplayModel>();
         private ProductDisplayModel _selectedProduct;
         private CartItemDisplayModel _selectedCartItem;
+        private IWindowManager _window;
 
         #endregion
 
@@ -166,12 +169,14 @@ namespace RMDesktopUI.ViewModels
         #region CTOR & Init
 
         public SalesViewModel(IProductEndPoint productEndPoint, IConfigHelper configHelper, 
-            ISaleEndPoint saleEndPoint, IMapper mapper)
+            ISaleEndPoint saleEndPoint, IMapper mapper, StatusInfoViewModel status, IWindowManager window)
         {
             _productEndPoint = productEndPoint;
             _saleEndPoint = saleEndPoint;
             _configHelper = configHelper;
             _mapper = mapper;
+            _status = status;
+            _window = window;
         }
 
         #endregion
@@ -181,7 +186,31 @@ namespace RMDesktopUI.ViewModels
         protected override async void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
-            await LoadProducts();
+            try
+            {
+                await LoadProducts();
+            }
+            catch (Exception ex)
+            {
+                dynamic settings = new ExpandoObject();
+                settings.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                settings.ResizeMode = ResizeMode.NoResize;
+                settings.Title = "System Error";
+
+                if (string.Equals(ex.Message, "Unauthorized"))
+                {
+                    _status.UpdateMessage("Unaothorized Access",
+                    "You do not have permission to interact with the Sales Form.");
+                    _window.ShowDialog(_status, null, settings);
+                }
+                else
+                {
+                    _status.UpdateMessage("Fatal Exception", ex.Message);
+                    _window.ShowDialog(_status, null, settings);
+                }
+
+                TryClose();
+            }
         }
 
         private async Task LoadProducts()
