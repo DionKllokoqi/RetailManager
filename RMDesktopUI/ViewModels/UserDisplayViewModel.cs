@@ -14,11 +14,22 @@ namespace RMDesktopUI.ViewModels
 {
     public class UserDisplayViewModel : Screen
     {
+        #region Private Fields
+
         private readonly StatusInfoViewModel _status;
         private readonly IWindowManager _window;
         private readonly IUserEndPoint _userEndPoint;
+        private UserModel _selectedUser;
+        private string _selectedUserName;
+        private BindingList<string> _userRoles = new BindingList<string>();
+        private BindingList<UserModel> _users;
+        private BindingList<string> _availableRoles = new BindingList<string>();
+        private string _selectedUserRole;
+        private string _selectedAvailableRole;
 
-        BindingList<UserModel> _users;
+        #endregion
+
+        #region Public Properties
 
         public BindingList<UserModel> Users
         {
@@ -29,12 +40,91 @@ namespace RMDesktopUI.ViewModels
                 NotifyOfPropertyChange(() => Users);
             }
         }
+        public UserModel SelectedUser
+        {
+            get { return _selectedUser; }
+            set
+            {
+                _selectedUser = value;
+                SelectedUserName = value.Email;
+                UserRoles = new BindingList<string>(value.Roles.Select(x => x.Value).ToList());
+                LoadRoles();
+                NotifyOfPropertyChange(() => SelectedUser);
+            }
+        }
+        public string SelectedUserName
+        {
+            get => _selectedUserName;
+            set
+            {
+                _selectedUserName = value;
+                NotifyOfPropertyChange(() => SelectedUserName);
+            }
+        }
+        public BindingList<string> UserRoles
+        {
+            get => _userRoles;
+            set
+            {
+                _userRoles = value;
+                NotifyOfPropertyChange(() => UserRoles);
+            }
+        }
+        public BindingList<string> AvailableRoles
+        {
+            get => _availableRoles;
+            set 
+            {
+                _availableRoles = value;
+                NotifyOfPropertyChange(() => AvailableRoles);
+            }
+        }
+        public string SelectedUserRole
+        {
+            get => _selectedUserRole;
+            set
+            {
+                _selectedUserRole = value;
+                NotifyOfPropertyChange(() => SelectedUserRole);
+            }
+        }
+        public string SelectedAvailableRole
+        {
+            get => _selectedAvailableRole;
+            set
+            {
+                _selectedAvailableRole = value;
+                NotifyOfPropertyChange(() => SelectedAvailableRole);
+            }
+        }
+
+        #endregion
+
+        #region CTOR & Init
 
         public UserDisplayViewModel(StatusInfoViewModel status, IWindowManager window, IUserEndPoint userEndPoint)
         {
             _status = status;
             _window = window;
             _userEndPoint = userEndPoint;
+        } 
+
+        #endregion
+
+        public async void AddSelectedRole()
+        {
+            await _userEndPoint.AddUserToRole(SelectedUser.Id, SelectedAvailableRole);
+
+            UserRoles.Add(SelectedAvailableRole);
+            AvailableRoles.Remove(SelectedAvailableRole);
+        }
+
+        public async void RemoveSelectedRole()
+        {
+            await _userEndPoint.RemoveUserFromRole(SelectedUser.Id, SelectedUserRole);
+
+            UserRoles.Remove(SelectedUserRole);
+            AvailableRoles.Add(SelectedUserRole);
         }
 
         protected override async void OnViewLoaded(object view)
@@ -71,6 +161,20 @@ namespace RMDesktopUI.ViewModels
         {
             var userList = await _userEndPoint.GetAll();
             Users = new BindingList<UserModel>(userList);
+        }
+
+        private async Task LoadRoles()
+        {
+            var roles = await _userEndPoint.GetAllRoles();
+
+            foreach (var role in roles)
+            {
+                // If role is not found amongst selected user roles, IndexOf returns -1
+                if (UserRoles.IndexOf(role.Value) < 0)
+                {
+                    AvailableRoles.Add(role.Value);
+                }
+            }
         }
     }
 }
